@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { PortableText } from "next-sanity";
 import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
@@ -52,11 +53,26 @@ const urlFor = (source: SanityImage) =>
     ? imageUrlBuilder({ projectId, dataset }).image(source)
     : null;
 
-export default async function PostPage({
+type PageProps = {
+  params: {
+    slug: string;
+  };
+};
+
+export async function generateMetadata({
   params,
-}: {
-  params: { slug: string };
-}) {
+}: PageProps): Promise<Metadata> {
+  const post: Post | null = await client.fetch(POST_QUERY, {
+    slug: params.slug,
+  });
+
+  return {
+    title: post?.title || "Blog Post",
+    description: post?.body ? post.body[0]?.children?.[0]?.text : "",
+  };
+}
+
+export default async function PostPage({ params }: PageProps) {
   // Fetch the post using the slug from the dynamic route
   const post: Post | null = await client.fetch(POST_QUERY, {
     slug: params.slug,
