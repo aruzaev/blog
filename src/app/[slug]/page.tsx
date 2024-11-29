@@ -3,26 +3,51 @@ import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Link from "next/link";
 import Image from "next/image";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
-// Interface for type safety
+// Detailed type definitions
+interface SanityImage {
+  _type: "image";
+  asset: {
+    _ref: string;
+    _type: "reference";
+  };
+  alt?: string;
+}
+
+interface PortableTextBlock {
+  _type: string;
+  _key?: string;
+  children?: {
+    _type: string;
+    text: string;
+    marks?: string[];
+  }[];
+  style?: string;
+  listItem?: string;
+}
+
 interface Post {
   title: string;
   publishedAt: string;
-  image?: {
-    asset: {
-      _ref: string;
-    };
+  image?: SanityImage;
+  body: PortableTextBlock[];
+  slug: {
+    current: string;
   };
-  body: any[];
 }
 
 // GROQ query to fetch the post by slug
-const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]`;
+const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]{
+  title,
+  publishedAt,
+  "slug": slug.current,
+  image,
+  body
+}`;
 
-// Generate image URLs
+// Generate image URLs with more specific typing
 const { projectId, dataset } = client.config();
-const urlFor = (source: SanityImageSource) =>
+const urlFor = (source: SanityImage) =>
   projectId && dataset
     ? imageUrlBuilder({ projectId, dataset }).image(source)
     : null;
@@ -62,7 +87,7 @@ export default async function PostPage({
       {postImageUrl && (
         <Image
           src={postImageUrl}
-          alt={post.title}
+          alt={post.image?.alt || post.title}
           className="rounded-xl object-cover"
           width={800}
           height={400}
