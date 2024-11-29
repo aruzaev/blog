@@ -3,6 +3,7 @@ import imageUrlBuilder from "@sanity/image-url";
 import { client } from "@/sanity/client";
 import Link from "next/link";
 import Image from "next/image";
+import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 // Interface for type safety
 interface Post {
@@ -21,7 +22,7 @@ const POST_QUERY = `*[_type == "post" && slug.current == $slug][0]`;
 
 // Generate image URLs
 const { projectId, dataset } = client.config();
-const urlFor = (source: any) =>
+const urlFor = (source: SanityImageSource) =>
   projectId && dataset
     ? imageUrlBuilder({ projectId, dataset }).image(source)
     : null;
