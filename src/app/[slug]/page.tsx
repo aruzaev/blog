@@ -53,15 +53,11 @@ const urlFor = (source: SanityImage) =>
     ? imageUrlBuilder({ projectId, dataset }).image(source)
     : null;
 
-type PageProps = {
-  params: {
-    slug: string;
-  };
-};
-
 export async function generateMetadata({
   params,
-}: PageProps): Promise<Metadata> {
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
   const post: Post | null = await client.fetch(POST_QUERY, {
     slug: params.slug,
   });
@@ -72,7 +68,11 @@ export async function generateMetadata({
   };
 }
 
-export default async function PostPage({ params }: PageProps) {
+export default async function PostPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   // Fetch the post using the slug from the dynamic route
   const post: Post | null = await client.fetch(POST_QUERY, {
     slug: params.slug,
